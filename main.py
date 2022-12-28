@@ -41,10 +41,10 @@ class SampleLexer:
 
         if token.value[1] == ')':
             last_char = '('
-        
+            
         if last_char == last_stack:
             self.stack.pop()
-        
+            
         else:
             raise Exception("Invalid Closing Comment Symbol") 
 
@@ -64,10 +64,12 @@ class SampleLexer:
         while True:
             tok = self.lexer.token()
             if not tok:
-                break
+                if len(self.stack) > 0:
+                    raise Exception("Incomplete Comment!")
+                return
             print(tok)
 
 s = SampleLexer()
-s.doLexicalAnalysis('first \n1 + /* assignment /* of*/ */compiler (* course /* test */ *) (*test*/')
+s.doLexicalAnalysis('*)first \n1 + /* assignment /* of*/ */compiler (* course /* test */ *) (*test*/')
       
             
