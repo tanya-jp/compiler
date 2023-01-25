@@ -196,39 +196,39 @@ def p_expression_minus(t):
     'expression : expression MINUS expression'
     quadruples.append((str(t[0])+'='+str(t[1])+'-'+str(t[3])))
 
-def p_expression_times(t):
+def p_expression_times(t): #TODO
     'expression : expression TIMES expression'
     quadruples.append((str(t[0])+'='+str(t[1])+'*'+str(t[3])))
 
-def p_expression_divide(t):
+def p_expression_divide(t):#TODO
     'expression : expression DIVIDE expression'
     quadruples.append((str(t[0])+'='+str(t[1])+'/'+str(t[3])))
 
-def p_expression_divide(t):
-    'expression : expression DIVIDE expression'
-    quadruples.append((str(t[0])+'='+str(t[1])+'/'+str(t[3])))
+def p_expression_mod(t):#TODO
+    'expression : expression MOD expression'
+    quadruples.append((str(t[0])+'='+str(t[1])+'%'+str(t[3])))
 
-def p_expression_less(t):
+def p_expression_less(t):#TODO
     'expression : expression LT expression'
     quadruples.append((str(t[0])+'='+str(t[1])+'<'+str(t[3])))
 
-def p_expression_lessequal(t):
+def p_expression_lessequal(t):#TODO
     'expression : expression LTEQ expression'
     quadruples.append((str(t[0])+'='+str(t[1])+'<='+str(t[3])))
 
-def p_expression_greater(t):
+def p_expression_greater(t):#TODO
     'expression : expression GT expression'
     quadruples.append((str(t[0])+'='+str(t[1])+'>'+str(t[3])))
 
-def p_expression_greaterqual(t):
+def p_expression_greaterqual(t):#TODO
     'expression : expression GTEQ expression'
     quadruples.append((str(t[0])+'='+str(t[1])+'>='+str(t[3])))
 
-def p_expression_notqual(t):
+def p_expression_notqual(t):#TODO
     'expression : expression NEQ expression'
     quadruples.append((str(t[0])+'='+str(t[1])+'<>'+str(t[3])))
 
-def p_expression_qual(t):
+def p_expression_qual(t):#TODO
     'expression : expression EQ expression'
     quadruples.append((str(t[0])+'='+str(t[1])+'='+str(t[3])))
 
