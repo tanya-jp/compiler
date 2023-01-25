@@ -118,7 +118,7 @@ precedence = (
     )
 
 # dictionary of names
-names = { }
+names = []
 
 quadruples = []
 
@@ -152,13 +152,14 @@ def p_expression_and(t):
     falselist = t[4].falselist + t[1].falselist
     t[0] = E(truelist, falselist)
 
-def p_expression_unot(t):
-    'expression : NOT expression %prec UNOT'
-    t[0] = E(t[2].falselist, t[2].truelist)
+# def p_expression_unot(t):
+#     'expression : NOT expression %prec UNOT'
+#     t[0] = E(t[2].falselist, t[2].truelist)
 
 def p_expression_group(t):
     'expression : LPAREN expression RPAREN'
     t[0] = t[2]
+    quadruples.append(('('+str(t[2])+')'))
 
 def p_expression_true(t):
     'expression : TRUE'
@@ -169,6 +170,67 @@ def p_expression_false(t):
     'expression : FALSE'
     t[0] = E([], [nextinstr()])
     quadruples.append(("goto", ))
+
+def p_expression_integer(t):
+    'expression : INTEGERCONSTANT'
+    t[0] = t[1]
+
+def p_expression_real(t):
+    'expression : REALCONSTANT'
+    t[0] = t[1]
+
+def p_expression_id(t):
+    'expression : ID'
+    t[0] = t[1]
+    names.append(t[1])
+
+def p_expression_uminus(t):
+    'expression : UMINUS expression'
+    t[0] = -t[2]
+
+def p_expression_plus(t):
+    'expression : expression PLUS expression'
+    quadruples.append((str(t[0])+'='+str(t[1])+'+'+str(t[3])))
+
+def p_expression_minus(t):
+    'expression : expression MINUS expression'
+    quadruples.append((str(t[0])+'='+str(t[1])+'-'+str(t[3])))
+
+def p_expression_times(t):
+    'expression : expression TIMES expression'
+    quadruples.append((str(t[0])+'='+str(t[1])+'*'+str(t[3])))
+
+def p_expression_divide(t):
+    'expression : expression DIVIDE expression'
+    quadruples.append((str(t[0])+'='+str(t[1])+'/'+str(t[3])))
+
+def p_expression_divide(t):
+    'expression : expression DIVIDE expression'
+    quadruples.append((str(t[0])+'='+str(t[1])+'/'+str(t[3])))
+
+def p_expression_less(t):
+    'expression : expression LT expression'
+    quadruples.append((str(t[0])+'='+str(t[1])+'<'+str(t[3])))
+
+def p_expression_lessequal(t):
+    'expression : expression LTEQ expression'
+    quadruples.append((str(t[0])+'='+str(t[1])+'<='+str(t[3])))
+
+def p_expression_greater(t):
+    'expression : expression GT expression'
+    quadruples.append((str(t[0])+'='+str(t[1])+'>'+str(t[3])))
+
+def p_expression_greaterqual(t):
+    'expression : expression GTEQ expression'
+    quadruples.append((str(t[0])+'='+str(t[1])+'>='+str(t[3])))
+
+def p_expression_notqual(t):
+    'expression : expression NEQ expression'
+    quadruples.append((str(t[0])+'='+str(t[1])+'<>'+str(t[3])))
+
+def p_expression_qual(t):
+    'expression : expression EQ expression'
+    quadruples.append((str(t[0])+'='+str(t[1])+'='+str(t[3])))
 
 def p_error(t):
     print("Syntax error at '%s'" % t.value)
