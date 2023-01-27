@@ -48,7 +48,7 @@ tokens = [
              'COMMA',
              'ASSIGN',
              'UMINUS'
-         ] + list(keywords.values())
+         ] + list(reserved.values())
 
 # Tokens
 def t_ID(t):
@@ -117,10 +117,21 @@ precedence = (
     ('right', 'UMINUS')
     )
 
-# dictionary of names
+# list of names
 names = []
 
 quadruples = []
+
+class Temp:
+    def __init__(self):
+        self.temp = []
+
+    def newTemp(self):
+        self.temp.append('temp' + str(len(self.temp)+1))
+        return 'temp' + str(len(self.temp))
+
+
+temps = Temp()
 
 def backpatch(l: list, i: int):
     for line_number in l:
@@ -152,9 +163,9 @@ def p_expression_and(t):
     falselist = t[4].falselist + t[1].falselist
     t[0] = E(truelist, falselist)
 
-# def p_expression_unot(t):
-#     'expression : NOT expression %prec UNOT'
-#     t[0] = E(t[2].falselist, t[2].truelist)
+def p_expression_unot(t):
+    'expression : NOT expression'
+    t[0] = E(t[2].falselist, t[2].truelist)
 
 def p_expression_group(t):
     'expression : LPAREN expression RPAREN'
@@ -190,47 +201,217 @@ def p_expression_uminus(t):
 
 def p_expression_plus(t):
     'expression : expression PLUS expression'
-    quadruples.append((str(t[0])+'='+str(t[1])+'+'+str(t[3])))
+    quadruples.append(((t[0])+'='+str(t[1])+'+'+str(t[3])))
 
 def p_expression_minus(t):
     'expression : expression MINUS expression'
-    quadruples.append((str(t[0])+'='+str(t[1])+'-'+str(t[3])))
+    quadruples.append(((t[0])+'='+str(t[1])+'-'+str(t[3])))
 
-def p_expression_times(t): #TODO
+def p_expression_times(t): 
     'expression : expression TIMES expression'
-    quadruples.append((str(t[0])+'='+str(t[1])+'*'+str(t[3])))
+    quadruples.append(((t[0])+'='+str(t[1])+'*'+str(t[3])))
 
-def p_expression_divide(t):#TODO
+def p_expression_divide(t):
     'expression : expression DIVIDE expression'
-    quadruples.append((str(t[0])+'='+str(t[1])+'/'+str(t[3])))
+    quadruples.append(((t[0])+'='+str(t[1])+'/'+str(t[3])))
 
-def p_expression_mod(t):#TODO
+def p_expression_mod(t):
     'expression : expression MOD expression'
-    quadruples.append((str(t[0])+'='+str(t[1])+'%'+str(t[3])))
+    quadruples.append(((t[0])+'='+str(t[1])+'%'+str(t[3])))
 
-def p_expression_less(t):#TODO
+def p_expression_less(t):
     'expression : expression LT expression'
-    quadruples.append((str(t[0])+'='+str(t[1])+'<'+str(t[3])))
+    t[0] = E([nextinstr()], [nextinstr() + 1])
+    quadruples.append(('if '+'='+str(t[1])+'<'+str(t[3])+' goto',))
+    quadruples.append(('goto',))
 
-def p_expression_lessequal(t):#TODO
+def p_expression_lessequal(t):
+    t[0] = E([nextinstr()], [nextinstr() + 1])
     'expression : expression LTEQ expression'
-    quadruples.append((str(t[0])+'='+str(t[1])+'<='+str(t[3])))
+    quadruples.append(('if '+'='+str(t[1])+'<='+str(t[3])+ ' goto',))
+    quadruples.append(('goto',))
 
-def p_expression_greater(t):#TODO
+def p_expression_greater(t):
     'expression : expression GT expression'
-    quadruples.append((str(t[0])+'='+str(t[1])+'>'+str(t[3])))
+    t[0] = E([nextinstr()], [nextinstr() + 1])
+    quadruples.append(('if '+'='+str(t[1])+'>'+str(t[3])+ ' goto',))
+    quadruples.append(('goto',))
 
-def p_expression_greaterqual(t):#TODO
+def p_expression_greaterqual(t):
     'expression : expression GTEQ expression'
-    quadruples.append((str(t[0])+'='+str(t[1])+'>='+str(t[3])))
+    t[0] = E([nextinstr()], [nextinstr() + 1])
+    quadruples.append(('if '+'='+str(t[1])+'>='+str(t[3])+ ' goto',))
+    quadruples.append(('goto',))
 
-def p_expression_notqual(t):#TODO
+def p_expression_notqual(t):
     'expression : expression NEQ expression'
-    quadruples.append((str(t[0])+'='+str(t[1])+'<>'+str(t[3])))
+    t[0] = E([nextinstr()], [nextinstr() + 1])
+    quadruples.append(('if '+'='+str(t[1])+'<>'+str(t[3])+ ' goto',))
+    quadruples.append(('goto',))
 
-def p_expression_qual(t):#TODO
+def p_expression_qual(t):
     'expression : expression EQ expression'
-    quadruples.append((str(t[0])+'='+str(t[1])+'='+str(t[3])))
+    t[0] = E([nextinstr()], [nextinstr() + 1])
+    quadruples.append(('if '+'='+str(t[1])+'='+str(t[3])+ ' goto',))
+    quadruples.append(('goto',))
+
+class C:
+    def __init__(self, t, f):
+        self.truelist = t
+        self.falselist = f
+
+def p_constant_integer(t):
+    'constant : INTEGERCONSTANT'
+    t[0] = t[1]
+
+def p_constant_real(t):
+    'constant : REALCONSTANT'
+    t[0] = t[1]
+
+class CL:
+    def __init__(self, t, f):
+        self.truelist = t
+        self.falselist = f
+
+def p_constantList_integer(t):
+    'constantList : constant'
+    t[0] = t[1]
+
+def p_constantList_real(t):
+    'constantList : constantList COMMA constant'
+    t[0] = t[1] + t[3]
+
+class N:
+    def __init__(self, nextlist):
+        self.nextlist = nextlist
+        quadruples.append(('goto',))
+
+
+def p_N(t):
+    'N : '
+    t[0] = N([])
+    pass
+
+class Statement:
+    def __init__(self, nextlist):
+        self.nextlist = nextlist
+
+
+def p_statement_assign(t):
+    'statement : ID ASSIGN expression'
+    quadruples.append((str(t[1]) + '=' + str(t[3]),))
+    names.append(t[1])
+    t[0] = Statement([])
+
+
+def p_statement_ifthen(t):
+    'statement : IF expression THEN marker statement'
+    backpatch(t[2].truelist, t[4])
+    if t[5].nextlist == None:
+        nextlist = t[2].falselist
+    else:
+        nextlist = t[2].falselist + t[5].nextlist
+    t[0] = Statement(nextlist)
+
+
+def p_statement_ifthenelse(t):
+    'statement : IF expression THEN marker statement N ELSE marker statement'
+    backpatch(t[2].truelist, t[4])
+    backpatch(t[2].falselist, t[8])
+    temp = t[5].nextlist + t[6].nextlist
+    nextlist = temp + t[9].nextlist
+    t[0] = Statement(nextlist)
+
+
+def p_statement_while(t):
+    'statement : WHILE marker expression DO marker statement'
+    backpatch(t[6].nextlist, t[2])
+    backpatch(t[3].truelist, t[5])
+    nextlist = t[3].falselist
+    quadruples.append(('goto', t[2]))
+    t[0] = Statement(nextlist)
+
+
+def p_statement_compound(t):
+    'statement : compoundStatement'
+    t[0] = t[1]
+
+
+def p_statement_print(t):
+    'statement : PRINT LPAREN expression RPAREN'
+    t[3] = str(t[3])
+    quadruples.append(('printf("%d\n",' + t[3].addr + ")",))
+
+
+class StatementList:
+    def __init__(self, nextlist):
+        self.nextlist = nextlist
+
+def p_statementList_statement(t):
+    'statementList : statement'
+    nextlist = t[1].nextlist
+    t[0] = StatementList(nextlist)
+
+def p_statementList_statementList(t):
+    'statementList : statementList SEMICOLON marker statement'
+    backpatch(t[1].nextlist, t[3])
+    t[0] = StatementList(t[4].nextlist)
+
+
+class CompoundStatement:
+    def __init__(self, nextlist):
+        self.nextlist = nextlist
+
+def p_compoundStatement_beginEnd(t):
+    'compoundStatement : BEGIN statementList END'
+    nextlist = t[2].nextlist
+    t[0] = CompoundStatement(nextlist)
+    quadruples.append('end')
+
+class Type:
+    def __init__(self):
+        pass
+
+
+def p_type_integer(t):
+    'type : INTEGERCONSTANT'
+    t[0] = t[1]
+
+def p_type_real(t):
+    'type : REALCONSTANT'
+    t[0] = t[1]
+
+
+class IdList:
+    def __init__(self):
+        pass
+
+def p_idList_id(t):
+    """idList : ID"""
+    t[0] = [t[1]]
+    names.append(t[1])
+
+
+def p_idList_idListId(t):
+    """idList : idList COMMA ID"""
+    t[0] = t[1] + t[3]
+    names.append(t[1])
+
+class DeclarationList:
+    def __init__(self):
+        pass
+
+
+# class Program:
+#     def __init__(self):
+#         pass
+
+# def p_program(t):
+#     """program : PROGRAM ID declarations compoundStatement"""
+#     names.append(t[2])
+
+
+
 
 def p_error(t):
     print("Syntax error at '%s'" % t.value)
